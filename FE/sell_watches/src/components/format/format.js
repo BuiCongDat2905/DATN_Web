@@ -53,7 +53,6 @@ export const validDob = (value) => {
     const today = new Date()
 
     let age = today.getFullYear() - dob.getFullYear()
-
     const monthDiff = today.getMonth() - dob.getMonth()
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
         age--;
@@ -62,12 +61,17 @@ export const validDob = (value) => {
 }
 export const formatDob = (value) => {
     const formats = ["dd/MM/yyyy", "dd-MM-yyyy", "yyyy.MM.dd", "dd MM yyyy"];
+    const today = new Date();
     for (const fmt of formats) {
         try {
             const parsedDate = parse(value, fmt, new Date());
+            if (today.getFullYear() - parsedDate.getFullYear >= 100) {
+                console.log(today.getFullYear() - parsedDate.getFullYear());
+                return false;
+            }
             return format(parsedDate, "yyyy-MM-dd");
         } catch (error) {
-
+            return false;
         }
     }
 

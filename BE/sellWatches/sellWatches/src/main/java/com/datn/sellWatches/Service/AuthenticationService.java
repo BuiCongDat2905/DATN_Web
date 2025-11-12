@@ -106,8 +106,12 @@ public class AuthenticationService {
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
         var signToken = verifyToken(request.getToken());
+
         String jit = signToken.getJWTClaimsSet().getJWTID();
         Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+        if (invalidatedTokenRepository.existsById(jit)) {
+            return;
+        }
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                 .id(jit)
                 .het_han(expiryTime)
@@ -173,6 +177,9 @@ public class AuthenticationService {
 
     private String buildScope(Account acount) {
         return acount.getQuyen().getTenQuyen();
+    }
+    public String extractSubject(String token) throws ParseException, JOSEException {
+        return verifyToken(token).getJWTClaimsSet().getSubject();
     }
     @Transactional
     public Boolean register(RegisterRequest request) {

@@ -23,7 +23,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InvalidatedToken {
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 	Date het_han;
 }

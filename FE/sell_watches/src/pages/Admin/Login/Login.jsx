@@ -80,7 +80,7 @@ function Login() {
                         <input
                             type="text"
                             className="form-control"
-                            id="exampleFormControlInput1"
+                            id="numberPhone"
                             placeholder="Số điện thoại"
                             name="tenTaiKhoan"
                             ref={inputRef}
@@ -94,12 +94,16 @@ function Login() {
                         <input
                             type="password"
                             className="form-control"
-                            id="exampleFormControlInput1"
+                            id="password"
                             placeholder="Mật khẩu"
                             name="matKhau"
                             required
                         />
-                        <Link onClick={handlerForget} htmlFor="exampleFormControlInput1" className={`form-label`}>
+                        <Link
+                            onClick={handlerForget}
+                            htmlFor="exampleFormControlInput1"
+                            className={`form-label ${cx('aElement-style ')}`}
+                        >
                             Quên mật khẩu?
                         </Link>
                     </div>
@@ -109,7 +113,9 @@ function Login() {
                         </button>
                         <div className={cx('create-acc')}>
                             <span>Bạn chưa có tài khoản?</span>
-                            <Link to={'/register'}>Tạo tài khoản mới</Link>
+                            <Link to={'/register'} className={cx('aElement-style')}>
+                                Tạo tài khoản mới
+                            </Link>
                         </div>
                     </div>
                 </form>

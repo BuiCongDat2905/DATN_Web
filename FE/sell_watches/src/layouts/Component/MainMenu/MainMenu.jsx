@@ -11,26 +11,43 @@ const cx = classNames.bind(style);
 function MainMenu() {
     const [isVisible, setIsVisible] = useState(false);
     const [contentMenu, setContentMenu] = useState();
+    const [classHover, setClassHover] = useState(null);
     const tooltipRef = useRef(null);
     const triggerRef = useRef(null);
 
-    const handleMouseEnter = (value, isValue) => {
+    const handleMouseEnter = (value, isValue, event) => {
+        if (event) {
+            const el = event.currentTarget || event.target;
+            const elementA = el.querySelector('a');
+            if (elementA) {
+                if (classHover && !el.contains(classHover)) {
+                    classHover.classList.remove(style.itemHover);
+                }
+                setClassHover(elementA);
+                elementA.classList.add(style.itemHover);
+            } else {
+            }
+        }
         if (isValue) {
             setContentMenu(value);
         }
         setIsVisible(true);
     };
     const handleMouseLeave = (e) => {
-        const relatedTarget = e.relatedTarget;
+        var relatedTarget = e.relatedTarget;
         if (!relatedTarget || !(relatedTarget instanceof Node)) {
             setIsVisible(false);
             return;
         }
+
         if (!triggerRef.current?.contains(relatedTarget) && !tooltipRef.current?.contains(relatedTarget)) {
+            if (classHover !== null && relatedTarget !== classHover) {
+                classHover.classList.remove(style.itemHover);
+            }
             setIsVisible(false);
         }
     };
-
+    console.log();
     return (
         <div className={`${cx('menu')}`}>
             <div className="container">
@@ -42,55 +59,58 @@ function MainMenu() {
                     </li>
                     <li
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listTrademark, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listTrademark, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link to="/tran">Thương hiệu</Link>
                     </li>
                     <li
-                        className={cx('li-hover')}
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listWatch, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listWatch, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ nam</Link>
                     </li>
                     <li
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listWatch, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listWatch, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ nữ</Link>
                     </li>
                     <li
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listWatch, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listWatch, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ đôi</Link>
                     </li>
                     <li
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listClock, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listClock, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ treo tường</Link>
                     </li>
                     <li
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listStrap, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listStrap, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Dây đồng hồ</Link>
                     </li>
                     <li
                         ref={triggerRef}
-                        onMouseEnter={() => handleMouseEnter(listOther, true)}
+                        onMouseEnter={(e) => handleMouseEnter(listOther, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Sản phẩm khác</Link>
                     </li>
-                    <li>
+                    <li
+                        ref={triggerRef}
+                        onMouseEnter={(e) => handleMouseEnter({}, true, e)}
+                        onMouseLeave={handleMouseLeave}
+                    >
                         <Link>Sửa đồng hồ</Link>
                     </li>
                     {isVisible ? (

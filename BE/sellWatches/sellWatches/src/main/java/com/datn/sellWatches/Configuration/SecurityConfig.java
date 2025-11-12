@@ -26,7 +26,7 @@ public class SecurityConfig {
             "/products/filter", "/order", "/payment/**", "/dashboard/top", "/dashboard/bottom",
             "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh", "/products/filterAdmin", "/products/type", "/products/addProduct",
             "/products/forCart","/products/remove", "/products/update", "/products/idAdmin", "/payment/dataAdmin", "/type/addType", "/payment/billContent",
-            "/auth/register", "/customer/getInfor", "order/updateStatusOrder"
+            "/auth/register", "/customer/getInfo", "order/updateStatusOrder"
     };
     private final String[] PUBLIC_GET_ENDPOINT = {
             "/products", "/products/**","/payment/**"

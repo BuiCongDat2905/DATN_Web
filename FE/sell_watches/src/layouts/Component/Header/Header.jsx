@@ -18,9 +18,9 @@ function Header() {
     return (
         <div className={cx('header')}>
             <div className={`container ${cx('header_')}`}>
-                <div className={cx('logo')}>
+                <Link to={'/'} className={cx('logo')}>
                     <img src="https://donghoduyanh.com/images/config/logo-da_1726290561.png.webp" alt=""></img>
-                </div>
+                </Link>
                 <div className={cx('rightHeader')}>
                     <div className={cx('search')}>
                         <Search />

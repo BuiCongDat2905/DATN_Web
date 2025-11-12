@@ -1,6 +1,7 @@
 package com.datn.sellWatches.Service;
 
 import java.sql.Date;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,6 +10,9 @@ import java.util.List;
 import com.datn.sellWatches.ComponentFunction.ComponentFun;
 import com.datn.sellWatches.DTO.Request.StringRequest;
 import com.datn.sellWatches.DTO.Response.CustomerResponse.GetInfoCustomerResponse;
+import com.datn.sellWatches.Exception.AppException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
@@ -70,8 +74,8 @@ public class CustomerService {
 					.customerRes(resDay)
 					.build();
 	}
-	public GetInfoCustomerResponse getInfoCustomer(StringRequest reuqest) {
-		Customer customer = customerRepository.findBySoDienThoai(reuqest.getName());
+	public GetInfoCustomerResponse getInfoCustomer(String id) {
+		Customer customer = customerRepository.findBySoDienThoai(id);
 		if(customer == null){
 			return null;
 		}

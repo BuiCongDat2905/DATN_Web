@@ -7,6 +7,7 @@ import { useCookies } from 'react-cookie';
 import { postGetInfo } from '~/apiServices/Authentication/postGetInfo';
 import { postIntrospect } from '~/apiServices/Authentication/postIntrospect';
 import { postLogin } from '~/apiServices/Authentication/postLogin';
+import { postLogout } from '~/apiServices/Authentication/postLogout';
 const cx = classNames.bind(style);
 function AccountInfo() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,11 +43,11 @@ function AccountInfo() {
         if (token && !isHiden) {
             (async () => {
                 try {
-                    const res = await postGetInfo(token);
-                    if (res?.result?.valid === true) {
+                    const res = await postGetInfo({ name: token });
+                    if (res?.result) {
                         const result = res.result;
                         setUserData({
-                            username: result.soDienThoai,
+                            useId: result.soDienThoai,
                             fullName: result.tenKhachHang,
                             email: result.email,
                             dateOfBirth: result.ngaySinh,
@@ -64,7 +65,8 @@ function AccountInfo() {
         (async () => {
             try {
                 const token = cookies.token;
-                removeCookies('token');
+                const res = await postLogout(token);
+                // removeCookies('token');
                 navigate('/login');
             } catch (err) {
                 console.log(err);
@@ -76,7 +78,8 @@ function AccountInfo() {
             <div className={cx('avata')} onClick={toggleModal}>
                 {!isHiden ? (
                     <img
-                        src="https://readdy.ai/api/search-image?query=Professional%20portrait%20photo%20of%20a%20young%20man%20with%20short%20brown%20hair%20and%20friendly%20smile%2C%20high%20quality%20professional%20headshot%20on%20neutral%20background%2C%208k%20ultra%20HD%20quality%2C%20professional%20lighting&width=200&height=200&seq=1&orientation=squarish"
+                        src=""
+                        // src="https://readdy.ai/api/search-image?query=Professional%20portrait%20photo%20of%20a%20young%20man%20with%20short%20brown%20hair%20and%20friendly%20smile%2C%20high%20quality%20professional%20headshot%20on%20neutral%20background%2C%208k%20ultra%20HD%20quality%2C%20professional%20lighting&width=200&height=200&seq=1&orientation=squarish"
                         alt="User avatar"
                     />
                 ) : (
@@ -88,7 +91,7 @@ function AccountInfo() {
                         <Link to={'/login'}>Đăng nhập</Link>
                     </div>
                 ) : (
-                    <span>{userData.username}</span>
+                    <span>{userData.useId}</span>
                 )}
             </div>
             {isModalOpen && !isHiden && (
@@ -114,7 +117,7 @@ function AccountInfo() {
                                                     />
                                                 </div>
                                                 <h2 className={`text-xl font-semibold text-gray-800 `}>
-                                                    {userData.username}
+                                                    {userData.useId}
                                                 </h2>
                                             </div>
                                             <div className={cx('iconClose')} onClick={toggleModal}>

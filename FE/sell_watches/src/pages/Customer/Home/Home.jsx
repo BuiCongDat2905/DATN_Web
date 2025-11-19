@@ -62,12 +62,12 @@ function Home() {
         }, delayText);
         return () => clearInterval(interval);
     }, [displayedIndex, isDeleting, stringTextIntro, delayText]);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIsVisibleBanner((prev) => (prev + 1) % lenghObjBanner);
-        }, delay);
-        return () => clearInterval(interval);
-    }, [lenghObjBanner]);
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         setIsVisibleBanner((prev) => (prev + 1) % lenghObjBanner);
+    //     }, delay);
+    //     return () => clearInterval(interval);
+    // }, [lenghObjBanner]);
 
     const getTypeProductNew = (type, index) => {
         setProductNew(listProduct[type]);

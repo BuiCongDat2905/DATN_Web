@@ -26,7 +26,7 @@ function Products({ products, linkTo }) {
                                         to={`/dong-ho/${linkTo || validUrl(value.loai)}/${value.id}`}
                                         className={cx('img')}
                                     >
-                                        <img src={value.hinh_anh} alt="" />
+                                        <img src={value.hinh_anh} alt={value.ten_san_pham} />
                                         <div className={cx('discount')}>-10%</div>
                                         <div className={cx('gift')}>Mua 1 tặng 1</div>
                                     </Link>
@@ -52,7 +52,7 @@ function Products({ products, linkTo }) {
                                     <div className={cx('promotion')}>
                                         <span>Giá km:</span>
                                         <div>
-                                            <span>62.700.000</span>
+                                            <span>{formatNumber(value.gia)}</span>
                                             <span>₫</span>
                                         </div>
                                     </div>

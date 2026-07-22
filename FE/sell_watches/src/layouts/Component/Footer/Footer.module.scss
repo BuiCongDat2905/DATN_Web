@@ -202,10 +202,11 @@
             justify-content: center;
             width: 100%;
             text-align: center;
+            position: relative;
+            min-height: 50px;
             > div {
                 display: flex;
-                transform: translate(0, -50%);
-                position: absolute;
+                position: relative;
                 background: #fff;
                 width: 258px;
                 border: 1px solid var(--border-color);

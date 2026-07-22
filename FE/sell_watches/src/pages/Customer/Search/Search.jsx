@@ -48,19 +48,17 @@ function Search() {
 
         async function fetchData() {
             try {
-                formattedQuery !== '' ? (filter['tenSanPham'] = formattedQuery) : (filter['tenSanPham'] = null);
-                const res = await postFilterProducts(filter);
-                if (res.result) {
-                    setTotalPage(res.result.totalPage);
-                    setProducts(res.result.filterProductsResponse);
-                }
+                setFilter((prev) => ({
+                    ...prev,
+                    tenSanPham: formattedQuery !== '' ? formattedQuery : null,
+                }));
             } catch (err) {
                 console.error(err);
             }
         }
         setQuery(formattedQuery);
         fetchData();
-    }, [searchParams, page]);
+    }, [searchParams]);
 
     const handlerPage = (e) => {
         setFilter((prev) => ({
@@ -141,7 +139,7 @@ function Search() {
         }
     };
     useEffect(() => {
-        async function fetch() {
+        async function fetchProducts() {
             try {
                 const res = await postFilterProducts(filter);
                 if (res.result) {
@@ -152,7 +150,7 @@ function Search() {
                 console.log(err);
             }
         }
-        fetch();
+        fetchProducts();
     }, [filter]);
     return (
         <div className="container">
@@ -181,7 +179,9 @@ function Search() {
                                 <div className={cx('title')}>{key.title}</div>
 
                                 {key.data ? (
-                                    <ul className={`wrapper ${cx('filter')}`}>
+                                    <ul
+                                        className={`wrapper ${cx('filter')} ${key.data.length < 5 ? cx('small-list') : ''}`}
+                                    >
                                         {key.data.map((value, index) => {
                                             return (
                                                 <li

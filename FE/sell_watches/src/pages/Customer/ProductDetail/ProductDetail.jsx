@@ -79,8 +79,8 @@ function ProductDetail() {
                         <div className={cx('frame-left')}>
                             <div className={cx('img')}>
                                 <img
-                                    src="https://donghoduyanh.com/images/products/2024/03/07/large/l29094776_1709801936.jpg"
-                                    alt=""
+                                    src={productDetail.hinh_anh}
+                                    alt={productDetail.ten_san_pham}
                                 />
                                 <div className={cx('discount')}>-10%</div>
                                 <div className={cx('gift')}>Mua 1 tặng 1</div>
@@ -220,7 +220,7 @@ function ProductDetail() {
                             <div className={cx('promotion')}>
                                 <div className={cx('title')}>giá km:</div>
                                 <div className={cx('price-promotion')}>
-                                    <span>{formatNumber(83123313)}</span>
+                                    <span>{formatNumber(productDetail.gia)}</span>
                                     <span>₫</span>
                                 </div>
                                 <div className={cx('note-vat')}>{`(Giá trên đã bao gồm VAT)`}</div>

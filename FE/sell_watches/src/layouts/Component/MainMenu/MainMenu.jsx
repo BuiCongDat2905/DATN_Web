@@ -13,7 +13,6 @@ function MainMenu() {
     const [contentMenu, setContentMenu] = useState();
     const [classHover, setClassHover] = useState(null);
     const tooltipRef = useRef(null);
-    const triggerRef = useRef(null);
 
     const handleMouseEnter = (value, isValue, event) => {
         if (event) {
@@ -25,7 +24,6 @@ function MainMenu() {
                 }
                 setClassHover(elementA);
                 elementA.classList.add(style.itemHover);
-            } else {
             }
         }
         if (isValue) {
@@ -40,14 +38,13 @@ function MainMenu() {
             return;
         }
 
-        if (!triggerRef.current?.contains(relatedTarget) && !tooltipRef.current?.contains(relatedTarget)) {
+        if (!tooltipRef.current?.contains(relatedTarget)) {
             if (classHover !== null && relatedTarget !== classHover) {
                 classHover.classList.remove(style.itemHover);
             }
             setIsVisible(false);
         }
     };
-    console.log();
     return (
         <div className={`${cx('menu')}`}>
             <div className="container">
@@ -58,56 +55,48 @@ function MainMenu() {
                         </Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listTrademark, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link to="/tran">Thương hiệu</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listWatch, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ nam</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listWatch, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ nữ</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listWatch, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ đôi</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listClock, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Đồng hồ treo tường</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listStrap, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Dây đồng hồ</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter(listOther, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >
                         <Link>Sản phẩm khác</Link>
                     </li>
                     <li
-                        ref={triggerRef}
                         onMouseEnter={(e) => handleMouseEnter({}, true, e)}
                         onMouseLeave={handleMouseLeave}
                     >

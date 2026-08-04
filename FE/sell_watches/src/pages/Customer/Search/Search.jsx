@@ -19,49 +19,48 @@ function Search() {
     const [page, setPage] = useState('0');
     const [totalPage, setTotalPage] = useState();
     const [products, setProducts] = useState();
-    // const [query, setQuery] = useState('');
+    const [query, setQuery] = useState('');
     const [filter, setFilter] = useState({
-        // keyword: null,
-        // gia: null,
-        // loai: null,
-        // loai_may: null,
-        // mat_kinh: null,
-        // chat_lieu_vo: null,
-        // chat_lieu_day: null,
-        // mau_mat: null,
-        // xuat_xu: null,
-        // kieu_dang: null,
-        // phong_cach: null,
-        // duong_kinh: null,
-        // do_day: null,
-        // khang_nuoc: null,
-        // thuong_hieu: null,
-        // gioi_tinh: null,
-        // khac: null,
-        // sortBy: null,
-        // sortDirection: null,
-        // fuzzy: true,
-        // page: 0,
-        // size: 10,
+        tenSanPham: null,
+        gioiTinh: null,
+        thuongHieu: null,
+        minGia: null,
+        maxGia: null,
+        loaiMay: null,
+        minDuongKinh: null,
+        maxDuongKinh: null,
+        chatLieuDay: null,
+        chatLieuVo: null,
+        matKinh: null,
+        mauMat: null,
+        phongCach: null,
+        kieuDang: null,
+        xuatXu: null,
+        page: 0,
+        duongKinh: null,
+        mucGia: null,
     });
-    const [notFilter, setNotFilter] = useState([
-        'minGia',
-        'maxGia',
-        'minDuongKinh',
-        'maxDuongKinh',
-        'page',
-        'size',
-        'fuzzy',
-    ]);
+    const [notFilter, setNotFilter] = useState(['minGia', 'maxGia', 'minDuongKinh', 'maxDuongKinh']);
     const listFilterProduct = listFilter;
     useEffect(() => {
         const searchQuery = searchParams.get('q') || '';
         const formattedQuery = searchQuery.replace(/-/g, ' ');
-        setFilter((prev) => ({
-            ...prev,
-            keyword: formattedQuery !== '' ? formattedQuery : null,
-        }));
-    }, [searchParams]);
+
+        async function fetchData() {
+            try {
+                formattedQuery !== '' ? (filter['tenSanPham'] = formattedQuery) : (filter['tenSanPham'] = null);
+                const res = await postFilterProducts(filter);
+                if (res.result) {
+                    setTotalPage(res.result.totalPage);
+                    setProducts(res.result.filterProductsResponse);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        setQuery(formattedQuery);
+        fetchData();
+    }, [searchParams, page]);
 
     const handlerPage = (e) => {
         setFilter((prev) => ({
@@ -73,19 +72,29 @@ function Search() {
     };
     const handlerDeleteFilterValue = (value) => {
         if (value === 'All') {
-            setFilter({});
-            return;
+            setFilter({
+                gioiTinh: null,
+                thuongHieu: null,
+                mucGia: null,
+                khuyenMai: null,
+                loaiMay: null,
+                duongKinh: null,
+                chatLieuDay: null,
+                chatLieuVo: null,
+                matKinh: null,
+                mauMat: null,
+                phongCach: null,
+                kieuDang: null,
+                xuatXu: null,
+                page: 0,
+            });
         }
         setFilter((prev) => ({
             ...prev,
-            keyword: '',
             [value]: null,
         }));
     };
     const handlerAddFilterValue = (key, value) => {
-        if (key === 'page' || key === 'size') {
-            return;
-        }
         let price = {
             min: null,
             max: null,
@@ -133,12 +142,11 @@ function Search() {
     };
     useEffect(() => {
         async function fetch() {
-            console.log('filter', filter);
             try {
-                const res = await searchProduct(filter);
-                if (res.status === 'success') {
-                    setTotalPage(res.data.totalPages);
-                    setProducts(res.data.content);
+                const res = await postFilterProducts(filter);
+                if (res.result) {
+                    setTotalPage(res.result.totalPage);
+                    setProducts(res.result.filterProductsResponse);
                 }
             } catch (err) {
                 console.log(err);
@@ -154,13 +162,12 @@ function Search() {
                     {Object.values(filter).some((value) => value !== null) ? (
                         <ul>
                             {Object.keys(filter).map((value, index) =>
-                                filter[value] !== null && !notFilter.includes(value) ? (
+                                filter[value] !== null && !notFilter.includes(value) && value !== 'page' ? (
                                     <li onClick={() => handlerDeleteFilterValue(value)} key={index}>
                                         {filter[value]}
                                     </li>
                                 ) : null,
                             )}
-
                             <li onClick={() => handlerDeleteFilterValue('All')} className={cx('delete-all')}>
                                 Xóa hết
                             </li>

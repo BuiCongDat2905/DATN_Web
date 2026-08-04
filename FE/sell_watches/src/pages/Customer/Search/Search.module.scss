@@ -43,7 +43,7 @@
         margin-right: 10px;
         &:hover .filter,
         .filter:hover {
-            display: block !important;
+            display: block;
         }
         .title {
             cursor: pointer;
@@ -65,9 +65,10 @@
             column-gap: 20px;
             padding: 0;
             margin: 0;
+            border-radius: 10px;
             li {
                 list-style-type: none;
-                padding: 8px 0 8px 8px;
+                padding: 8px;
                 font-weight: 500;
                 margin-left: 0px;
                 font-size: 14px;
@@ -76,9 +77,15 @@
                 a {
                     text-decoration: none;
                     color: #333;
+                    padding: 5px 0 5px 5px;
+                    margin-right: 5px;
+                    display: inline-block;
+                    width: 100%;
                     &:hover {
-                        color: red;
+                        // color: red;
                         font-weight: 600;
+                        background-color: rgb(220, 235, 237);
+                        border-radius: 5px;
                     }
                 }
             }
@@ -91,4 +98,7 @@
 }
 .product {
     margin-top: 40px;
+}
+.small-list {
+    column-count: 1 !important;
 }

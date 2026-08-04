@@ -31,3 +31,6 @@ public class GlobalExceptionHandler {
     }
     
 }
+//1. dòng 14 thì cần viết rõ bắt lỗi gì giống với ở phía dưới (AppException.class)
+//2. Đồng nhất lỗi trả về là ApiResponse
+

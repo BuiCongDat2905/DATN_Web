@@ -84,13 +84,15 @@ function Home() {
             </a>
             <div className={cx('banner')}>
                 {Object.keys(banner_img).map((value, index) => (
-                    <Link key={index} to={value}>
+                    <div className={cx('banner_img')} key={index}>
+                        <Link key={index} to={value}>
                         <img
                             className={index === isVisibleBanner ? cx('active') : ''}
                             src={banner_img[value]}
                             alt={`banner ${index}`}
                         />
                     </Link>
+                    </div>
                 ))}
             </div>
             <div className={cx('introduce')}>
@@ -105,7 +107,7 @@ function Home() {
                 <div className={cx('inner')}>
                     <div className={`container ${cx('inner_')}`}>
                         <div>
-                            <div>
+                            <div className={cx('inner_img')}>
                                 <img src="https://i.imgur.com/bhFgxYo.png" alt="" />
                             </div>
                             <div className={cx('inner_text')}>
@@ -114,7 +116,7 @@ function Home() {
                             </div>
                         </div>
                         <div>
-                            <div>
+                            <div className={cx('inner_img')}>
                                 <img src="https://i.imgur.com/SswrpRG.png" alt="" />
                             </div>
 
@@ -124,7 +126,7 @@ function Home() {
                             </div>
                         </div>
                         <div>
-                            <div>
+                            <div className={cx('inner_img')}>
                                 <img src="https://i.imgur.com/hPmGGJx.png" alt="" />
                             </div>
                             <div className={cx('inner_text')}>

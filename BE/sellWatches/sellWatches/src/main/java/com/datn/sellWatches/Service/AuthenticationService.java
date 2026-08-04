@@ -91,7 +91,7 @@ public class AuthenticationService {
         var token = generateToken(user);
         String location = "";
 
-        if(user.getQuyen().getTenQuyen().equals("ADMIN")) {
+        if(user.getQuyen() != null && "ADMIN".equals(user.getQuyen().getTenQuyen())) {
             log.info(user.getQuyen().getTenQuyen());
             location = "/admin/thong-ke";
         }else{
@@ -203,7 +203,7 @@ public class AuthenticationService {
            if(accountRepository.existsByTenTaiKhoan(request.getSoDienThoai())){
                return false;
            }
-           Role role = roleRepository.findByTenQuyen("CUSTOMER")
+           Role role = roleRepository.findByTenQuyen("USER")
                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXIT));
            Account account = Account.builder()
                    .tenTaiKhoan(request.getSoDienThoai())

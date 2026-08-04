@@ -3,7 +3,6 @@ import style from './Search.module.scss';
 import { IconSearch } from '../icon';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { formatSearch } from '../format';
 
 const cx = classNames.bind(style);
 function Search() {
@@ -14,13 +13,13 @@ function Search() {
     };
     const handlerSearch = () => {
         const query = valueInput.replace(' ', '-');
-        navigate(`/search?q=${formatSearch(query)}`);
+        navigate(`/search?q=${query}`);
         setValueInput('');
     };
     const handlerSearchKeyDown = (e) => {
         if (e.key === 'Enter') {
             const query = valueInput.replace(' ', '-');
-            navigate(`/search?q=${formatSearch(query)}`);
+            navigate(`/search?q=${query}`);
             setValueInput('');
         }
     };

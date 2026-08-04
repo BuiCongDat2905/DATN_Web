@@ -3,10 +3,14 @@ package com.datn.sellWatches.Controller;
 import java.util.List;
 import java.util.Map;
 
+import com.datn.sellWatches.DTO.Request.Elasticsearch.SearchProductRequest;
 import com.datn.sellWatches.DTO.Request.Product.*;
 import com.datn.sellWatches.DTO.Request.StringRequest;
+import com.datn.sellWatches.DTO.Response.Elasticsearch.PageResponse;
 import com.datn.sellWatches.DTO.Response.ProductResponse.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +26,6 @@ import com.datn.sellWatches.Service.TypeService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -53,15 +56,39 @@ public class ProductController {
 	            .result(productService.getProduct(wildcardPart))
 	            .build();
 	}
-	@GetMapping("/search")
-	public ApiResponse<PageAndSearchProductResponse> getMethodName(
-			@RequestParam(value = "q",  required = false, defaultValue = "") String tenSanPham, 
-			@RequestParam(value = "page", defaultValue = "0") int page,
-			 @RequestParam(name = "size", defaultValue = "20") int size) {
-		PageAndSearchProductResponse result = productService.searchProductResponse(tenSanPham, page, size);
-		return ApiResponse.<PageAndSearchProductResponse>builder()
-				.result(result)
-				.build();
+//	@GetMapping("/search")
+//	public ApiResponse<PageAndSearchProductResponse> getMethodName(
+//			@RequestParam(value = "q",  required = false, defaultValue = "") String tenSanPham,
+//			@RequestParam(value = "page", defaultValue = "0") int page,
+//			 @RequestParam(name = "size", defaultValue = "20") int size) {
+//		PageAndSearchProductResponse result = productService.searchProductResponse(tenSanPham, page, size);
+//		return ApiResponse.<PageAndSearchProductResponse>builder()
+//				.result(result)
+//				.build();
+//	}
+	@PostMapping("/search")
+	public ResponseEntity<?> search(@Valid @RequestBody SearchProductRequest request) {
+		PageResponse<SearchProductResponse> response = productService.search(request);
+		return ResponseEntity.ok(Map.of(
+				"status", "success",
+				"message", "Search completed",
+				"data", response
+		));
+	}
+	@PostMapping("/reindex")
+	public ResponseEntity<?> reindex() {
+		productService.reindexAll();
+		return ResponseEntity.ok(Map.of(
+				"status", "success",
+				"message", "Reindex completed"
+		));
+	}
+	@PostMapping("/sync-elasticsearch")
+	public ResponseEntity<String> syncElasticsearch() {
+
+		productService.syncDataDoc();
+
+		return ResponseEntity.ok("Đồng bộ dữ liệu sang Elasticsearch thành công.");
 	}
 	@PostMapping("/filter")
 	public ApiResponse<FilterPageResponse> filterProducts(@RequestBody FilterProductsRequest request) {

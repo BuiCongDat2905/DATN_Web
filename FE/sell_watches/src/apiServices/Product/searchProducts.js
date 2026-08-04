@@ -1,10 +1,10 @@
-import * as request from "~/utils/request"
+import * as request from '~/utils/request';
 
-export const searchProduct = async (data, page) => {
+export const searchProduct = async (data) => {
     try {
-        const res = await request.get(`products/search?q=${data}&page=${page}`)
+        const res = await request.post(`products/search`, data);
         return res;
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
-}
+};

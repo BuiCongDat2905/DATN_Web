@@ -2,8 +2,11 @@
     width: 100%;
     margin-bottom: 80px;
     .product {
+        margin-right: 80px;
         width: 234px;
-        margin-right: 32px;
+    }
+    .product:last-child {
+        margin-right: 0;
     }
     .product-group {
         display: flex;

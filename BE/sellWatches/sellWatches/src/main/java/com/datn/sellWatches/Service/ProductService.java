@@ -2,18 +2,34 @@ package com.datn.sellWatches.Service;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
+import com.datn.sellWatches.DTO.Request.Elasticsearch.SearchProductRequest;
 import com.datn.sellWatches.DTO.Request.Product.*;
 import com.datn.sellWatches.DTO.Request.StringRequest;
+import com.datn.sellWatches.DTO.Response.Elasticsearch.PageResponse;
 import com.datn.sellWatches.DTO.Response.ProductResponse.*;
+import com.datn.sellWatches.Document.ProductDocument;
+import com.datn.sellWatches.Repository.ProductDocumentRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.HighlightQuery;
+import org.springframework.data.elasticsearch.core.query.highlight.Highlight;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightField;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightFieldParameters;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightParameters;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +57,35 @@ public class ProductService {
 	final ProductRepository productRepository;
 	final TypeRepository typeRepository;
 	final WarehouseRepository warehouseRepository;
-	
+	final ProductDocumentRepository	productDocumentRepository;
+	final ElasticsearchTemplate  elasticsearchTemplate;
+
+	private static final int DEFAULT_PAGE = 0;
+	private static final int DEFAULT_SIZE = 10;
+	private static final int MAX_SIZE = 100;
+	private static final int DEFAULT_MIN_AGE = 0;
+	private static final int DEFAULT_MAX_AGE = 200;
+
+	private static final List<String> SEARCH_FIELDS = List.of(
+			"ten_san_pham^2.0"
+//			"ma_san_pham^2.0",
+//			"loai^1.5",
+//			"mo_ta^1.5"
+	);
+	private static final List<String> HIGHLIGHT_FIELDS = List.of(
+			"ten_san_pham"
+//			"ma_san_pham",
+//			"loai",
+//			"mo_ta"
+	);
+	private static final Map<String, String> SORT_FIELDS = Map.of(
+//			"ngay_tao", "ngay_tao",
+//			"gia", "gia",
+			"ten_san_pham", "ten_san_pham.keyword"
+//			"loai", "loai.keyword",
+//			"ton_kho", "ton_kho",
+//			"duong_kinh", "duong_kinh"
+	);
 	public Map<String, List<GetListProductsHomeResponse>> getListProductHome() {
 	    Pageable pageable = PageRequest.of(0, 10);
 	    Map<String, List<GetListProductsHomeResponse>> result = new HashMap<>();
@@ -126,14 +170,17 @@ public class ProductService {
 	}
 	
 	public String validListType(String typeCode) {
+		if (typeCode == null || typeCode.length() < 3) {
+			return null;
+		}
 		String type = typeCode.substring(3);
-		 if(type.equals("Nam")) {
+		 if("Nam".equals(type)) {
 		        return "Đồng hồ Nam";
 		    }
-		    if(type.equals("Nu")) {
+		    if("Nu".equals(type)) {
 		        return "Đồng hồ Nữ";
 		    }
-		    if(type.equals("Doi")) {
+		    if("Doi".equals(type)) {
 		        return "Đồng hồ Đôi";
 		    }
 		    return null;
@@ -285,6 +332,7 @@ public class ProductService {
 					.ngay_nhap(dateNow)
 					.build();
 			warehouseRepository.save(warehouse);
+//			productDocumentRepository.save(product)
 			return true;
 		}catch(Exception e) {
 			log.info(e.toString());
@@ -406,4 +454,237 @@ public class ProductService {
 				.gia(product.getGia())
 				.build();
 	}
+
+//	Elasticsearch
+	public PageResponse<SearchProductResponse> search(SearchProductRequest request){
+		NativeQuery query = buildSearchQuery(request);
+
+		SearchHits<ProductDocument> searchHits = elasticsearchTemplate.search(query, ProductDocument.class);
+
+		List<SearchProductResponse> rl = searchHits.getSearchHits()
+				.stream()
+				.map(this::mapSearchHit)
+				.toList();
+
+		long totalHits = searchHits.getTotalHits();
+		int totalPages = (int)Math.ceil((double) totalHits/request.getSize());
+
+		return PageResponse.<SearchProductResponse>builder()
+				.content(rl)
+				.page(request.getPage())
+				.size(request.getSize())
+				.totalElements(totalHits)
+				.totalPages(totalPages)
+				.last(request.getPage() >= totalPages -1)
+				.first(request.getPage() == 0)
+				.build();
+	}
+
+	private NativeQuery buildSearchQuery(SearchProductRequest request){
+		int page = request.getPage() >= 0
+				? request.getPage()
+				: DEFAULT_PAGE;
+		int size = request.getSize() > 0
+				? Math.min(request.getSize(), MAX_SIZE)
+				: DEFAULT_SIZE;
+		List<Query> mustQuery = new ArrayList<>();
+		String keyword = request.getKeyword();
+
+
+		if (keyword != null && !keyword.isBlank()) {
+
+			mustQuery.add(
+					Query.of(q -> q.matchPhrasePrefix(m -> m
+							.field("ten_san_pham")
+							.query(keyword)
+					))
+			);
+
+		} else {
+
+			mustQuery.add(
+					Query.of(q -> q.matchAll(ma -> ma))
+			);
+		}
+
+		List<Query> filterQuery = new ArrayList<>();
+
+		// Filter: Loai
+//		if(request.getLoai() != null && !request.getLoai().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("loai.keyword")
+//							.value(request.getLoai())
+//					))
+//			);
+//		}
+//
+//		// Filter: Gioi tinh
+		if (request.getGioiTinh() != null && !request.getGioiTinh().isBlank()) {
+			String loai = request.getGioiTinh().trim();
+
+			filterQuery.add(
+					Query.of(q -> q.term(t -> t
+							.field("loai")
+							.value(loai)
+							.caseInsensitive(true)
+					))
+			);
+		}
+//
+//		// Filter: Thuong hieu
+//		if(request.getThuong_hieu() != null && !request.getThuong_hieu().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("thuong_hieu.keyword")
+//							.value(request.getThuong_hieu())
+//					))
+//			);
+//		}
+//
+//		// Filter: Loai may
+//		if(request.getLoai_may() != null && !request.getLoai_may().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("loai_may.keyword")
+//							.value(request.getLoai_may())
+//					))
+//			);
+//		}
+//
+//		// Filter: Chat lieu vo
+//		if(request.getChat_lieu_vo() != null && !request.getChat_lieu_vo().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("chat_lieu_vo.keyword")
+//							.value(request.getChat_lieu_vo())
+//					))
+//			);
+//		}
+//
+//		// Filter: Chat lieu day
+//		if(request.getChat_lieu_day() != null && !request.getChat_lieu_day().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("chat_lieu_day.keyword")
+//							.value(request.getChat_lieu_day())
+//					))
+//			);
+//		}
+//
+//		// Filter: Xuat xu
+//		if(request.getXuat_xu() != null && !request.getXuat_xu().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("xuat_xu.keyword")
+//							.value(request.getXuat_xu())
+//					))
+//			);
+//		}
+//
+//		// Filter: Kieu dang
+//		if(request.getKieu_dang() != null && !request.getKieu_dang().isBlank()){
+//			filterQuery.add(
+//					Query.of(q -> q.term(t -> t
+//							.field("kieu_dang.keyword")
+//							.value(request.getKieu_dang())
+//					))
+//			);
+//		}
+//
+		BoolQuery boolQuery = BoolQuery.of(b -> b
+				.must(mustQuery)
+				.filter(filterQuery));
+		String requestSortField = request.getSortBy();
+		String sortField = (requestSortField != null)
+				? SORT_FIELDS.getOrDefault(requestSortField, "ngay_tao")
+				: "ngay_tao";
+		String sortDiretion = request.getSortDirection();
+		Sort.Direction direction =
+				"ASC".equalsIgnoreCase(sortDiretion)
+						? Sort.Direction.ASC
+						: Sort.Direction.DESC;
+		Pageable pageable = PageRequest.of(
+				page,
+				size,
+				Sort.by(direction, sortField)
+			);
+
+		// ⭐ Highlight Configuration
+		HighlightFieldParameters highlightParams = HighlightFieldParameters.builder()
+				.withFragmentSize(150)
+				.withNumberOfFragments(1)
+				.build();
+		List<HighlightField> highlightFields = HIGHLIGHT_FIELDS.stream()
+				.map(f -> new HighlightField(f, highlightParams))
+				.toList();
+		HighlightParameters highlightParameters = HighlightParameters.builder()
+				.withPreTags("<em>")
+				.withPostTags("</em>")
+				.build();
+		Highlight highlight = new Highlight(highlightParameters, highlightFields);
+		HighlightQuery highlightQuery = new HighlightQuery(highlight, ProductDocument.class);
+
+		NativeQuery query = new NativeQueryBuilder()
+				.withQuery(Query.of(q -> q.bool(boolQuery)))
+				.withPageable(pageable)
+				.withHighlightQuery(highlightQuery)
+				.build();
+		log.debug("ES query built: keyword='{}', fuzzy={}, page={}/{}",
+				request.getKeyword(), request.getFuzzy(),
+				request.getPage(), request.getSize());
+
+		return query;
+	}
+	private  SearchProductResponse mapSearchHit(SearchHit<ProductDocument> hit){
+		ProductDocument doc = hit.getContent();
+
+		return SearchProductResponse.builder()
+				.id(doc.getId())
+				.ma_san_pham(doc.getMa_san_pham())
+				.ten_san_pham(doc.getTen_san_pham())
+				.loai(doc.getLoai())
+				.gia(doc.getGia())
+				.loai_may(doc.getLoai_may())
+				.ton_kho(doc.getTon_kho())
+				.hinh_anh(doc.getHinh_anh())
+				.duong_kinh(doc.getDuong_kinh())
+				.build();
+	}
+	public void reindexAll() {
+		IndexOperations	 indexOps = elasticsearchTemplate.indexOps(ProductDocument.class);
+
+		if (indexOps.exists()) {
+			indexOps.delete();
+		}
+
+		indexOps.create();
+		indexOps.putMapping(indexOps.createMapping());
+
+	}
+	public void syncDataDoc() {
+		productDocumentRepository.deleteAll();
+
+		// Đọc dữ liệu từ MySQL
+				List<Products> products = productRepository.findAll();
+
+		// Map sang ProductDocument
+				List<ProductDocument> docs = products.stream()
+						.map(this::toDocument)
+						.toList();
+
+		// Lưu vào Elasticsearch
+				productDocumentRepository.saveAll(docs);
+	}
+	private ProductDocument toDocument(Products product) {
+		return ProductDocument.builder()
+				.id(product.getId())
+				.ma_san_pham(product.getMa_san_pham())
+				.ten_san_pham(product.getTen_san_pham())
+				.loai(product.getLoai().getTenLoai())
+				.gia(product.getGia())
+				// map các field còn lại
+				.build();
+	}
+
 }

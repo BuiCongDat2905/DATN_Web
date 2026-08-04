@@ -65,8 +65,8 @@ function AccountInfo() {
         (async () => {
             try {
                 const token = cookies.token;
-                const res = await postLogout(token);
-                // removeCookies('token');
+                await postLogout(token);
+                removeCookies('token');
                 navigate('/login');
             } catch (err) {
                 console.log(err);

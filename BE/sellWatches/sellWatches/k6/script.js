@@ -5,8 +5,8 @@ const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 
 export let options = {
   stages: [
-    { duration: '30s', target: 100 },
-    { duration: '1m', target: 100 },
+    { duration: '30s', target: 10000 },
+    { duration: '1m', target: 10000 },
     { duration: '30s', target: 0 },
   ],
   thresholds: {
@@ -57,14 +57,26 @@ function browseProducts() {
 }
 
 function searchProducts(query) {
-  const url = `${BASE_URL}/products/search?q=${encodeURIComponent(query)}&page=0&size=20`;
-  const res = http.get(url, { headers: { Accept: 'application/json' } });
+  const url = `${BASE_URL}/products/search`;
+  const payload = JSON.stringify({
+    keyword: query,
+    page: 0,
+    size: 20,
+  });
+
+  const res = http.post(url, payload, {
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  });
+
   check(res, {
     'search products status 200': (r) => r.status === 200,
     'search results not empty': (r) => {
       try {
-        const result = r.json().result;
-        return result && result.searchProductResponse && result.searchProductResponse.length > 0;
+        const data = r.json().data;
+        return data && data.content && data.content.length > 0;
       } catch (e) {
         return false;
       }
